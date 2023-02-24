@@ -36,7 +36,7 @@ const BlogPosts = () => {
                                 Apply now to get the money you need. It’s now faster and easier
                                 which takes only 5 minutes!
                             </p>
-                            <SignPassButton />
+                            <SignPassButton onClick={() => {}} />
                         </div>
                     </div>
                     {BlogPostsSecondData.map((post, i) => {
