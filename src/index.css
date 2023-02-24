@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    font-family: 'Inter', sans-serif;
+    background: #ecf2f5;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: #1e3144;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    overscroll-behavior: none;
+}
+
+#root {
+    position: relative;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        max-width: 1024px;
+    }
+}
+
+h1 {
+    @apply text-4xl font-bold leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl;
+}
+h2 {
+    @apply text-[32px] font-bold leading-[1.2] sm:text-[34px] lg:text-[40px];
+}
+h3 {
+    @apply text-[32px] font-bold leading-[1.2] sm:text-[34px] md:text-4xl lg:text-[38px];
+}
+h4 {
+    @apply text-2xl font-bold leading-normal;
+}
+h5 {
+    @apply text-sm font-bold leading-normal;
+}
+h6 {
+    @apply text-xl font-normal leading-normal;
+}
+
+.blue-text {
+    @apply bg-textBg bg-clip-text text-transparent;
+}
+
+.nav-link.active {
+    @apply text-darkFont;
+}
+
+.custom-scrollbar {
+    scrollbar-width: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+    background-color: #c7d3d9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #1dc8be;
+    background: linear-gradient(94.77deg, #1dc8be -0.27%, #00a3d5 99.73%);
+    border-radius: 10px;
+}
+
+.scrollbar-none {
+    scrollbar-width: 0;
+}
+.scrollbar-none::-webkit-scrollbar {
+    width: 0;
+}
+
+.menu-toggler {
+    width: 24px;
+    height: 16px;
+}
+
+.menu-toggler span {
+    display: inline-block;
+    background-color: #1e3144;
+    width: 100%;
+    height: 2px;
+    border-radius: 4px;
+    transition: all 0.3s ease-in;
+}
+
+.menu-open .menu-toggler-top {
+    transform: rotate(-45deg) translate(-6px, 4px);
+}
+.menu-open .menu-toggler-middle {
+    display: none;
+}
+.menu-open .menu-toggler-bottom {
+    transform: rotate(45deg) translate(-5px, -4px);
+}
