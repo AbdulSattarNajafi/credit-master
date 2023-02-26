@@ -8,7 +8,11 @@ import PlusIcon from '../../../assets/icons/plus-icon.svg';
 
 enum CalculatorActionKind {
     LOANAMOUNT = 'LOAN_AMOUNT',
+    LOANAMOUNTINCREASE = 'LOAN_AMOUNT_INCREASE',
+    LOANAMOUNTDECREASE = 'LOAN_AMOUNT_DECREASE',
     LOANTENURE = 'LOAN_TENURE',
+    LOANTENUREINCREASE = 'LOAN_TENURE_INCREASE',
+    LOANTENUREDECREASE = 'LOAN_TENURE_DECREASE',
 }
 
 interface CalculatorAction {
@@ -41,19 +45,85 @@ function calculatorReducer(state: CalculatorState, action: CalculatorAction) {
                 ...state,
                 loanAmount: action.payload,
                 monthlyInstallment:
-                    state.loanAmount / state.month + state.totalInterest * state.month,
-                totalInterest: (state.loanAmount / 100) * 1.73526 * state.month,
-                totalPayment: state.loanAmount + state.totalInterest,
+                    ((action.payload / 100) * 1.73527 * state.month + action.payload) / state.month,
+                totalInterest: (action.payload / 100) * 1.73527 * state.month,
+                totalPayment: action.payload + (action.payload / 100) * 1.73527 * state.month,
             };
+        case 'LOAN_AMOUNT_INCREASE':
+            if (state.loanAmount < 100000) {
+                const updatedLoanAmount = state.loanAmount + action.payload;
+                return {
+                    ...state,
+                    loanAmount: updatedLoanAmount,
+                    monthlyInstallment:
+                        ((updatedLoanAmount / 100) * 1.73527 * state.month + updatedLoanAmount) /
+                        state.month,
+                    totalInterest: (updatedLoanAmount / 100) * 1.73527 * state.month,
+                    totalPayment:
+                        updatedLoanAmount + (updatedLoanAmount / 100) * 1.73527 * state.month,
+                };
+            } else {
+                return state;
+            }
+        case 'LOAN_AMOUNT_DECREASE':
+            const updatedLoanAmount = state.loanAmount - action.payload;
+            if (state.loanAmount > 500) {
+                return {
+                    ...state,
+                    loanAmount: state.loanAmount - action.payload,
+                    monthlyInstallment:
+                        ((updatedLoanAmount / 100) * 1.73527 * state.month + updatedLoanAmount) /
+                        state.month,
+                    totalInterest: (updatedLoanAmount / 100) * 1.73527 * state.month,
+                    totalPayment:
+                        updatedLoanAmount + (updatedLoanAmount / 100) * 1.73527 * state.month,
+                };
+            } else {
+                return state;
+            }
         case 'LOAN_TENURE':
             return {
                 ...state,
                 month: action.payload,
                 monthlyInstallment:
-                    state.loanAmount / state.month + state.totalInterest * state.month,
-                totalInterest: (state.loanAmount / 100) * 1.73526 * state.month,
-                totalPayment: state.loanAmount + state.totalInterest,
+                    ((state.loanAmount / 100) * 1.73527 * action.payload + state.loanAmount) /
+                    action.payload,
+                totalInterest: (state.loanAmount / 100) * 1.73527 * action.payload,
+                totalPayment:
+                    state.loanAmount + (state.loanAmount / 100) * 1.73527 * action.payload,
             };
+        case 'LOAN_TENURE_INCREASE':
+            if (state.month < 36) {
+                const updatedMonth = state.month + action.payload;
+                return {
+                    ...state,
+                    month: updatedMonth,
+                    monthlyInstallment:
+                        ((state.loanAmount / 100) * 1.73527 * updatedMonth + state.loanAmount) /
+                        updatedMonth,
+                    totalInterest: (state.loanAmount / 100) * 1.73527 * updatedMonth,
+                    totalPayment:
+                        state.loanAmount + (state.loanAmount / 100) * 1.73527 * updatedMonth,
+                };
+            } else {
+                return state;
+            }
+        case 'LOAN_TENURE_DECREASE':
+            if (state.month > 1) {
+                const updatedMonth = state.month - action.payload;
+                return {
+                    ...state,
+                    month: updatedMonth,
+                    monthlyInstallment:
+                        ((state.loanAmount / 100) * 1.73527 * updatedMonth + state.loanAmount) /
+                        updatedMonth,
+                    totalInterest: (state.loanAmount / 100) * 1.73527 * updatedMonth,
+                    totalPayment:
+                        state.loanAmount + (state.loanAmount / 100) * 1.73527 * updatedMonth,
+                };
+            } else {
+                return state;
+            }
         default:
             return state;
     }
@@ -67,9 +137,24 @@ const LoanCalculator = () => {
         dispatch({ type: CalculatorActionKind.LOANAMOUNT, payload: +amount });
     }
 
+    function loanIncreaseHandler() {
+        dispatch({ type: CalculatorActionKind.LOANAMOUNTINCREASE, payload: 500 });
+    }
+
+    function loanDecreaseHandler() {
+        dispatch({ type: CalculatorActionKind.LOANAMOUNTDECREASE, payload: 500 });
+    }
+
     function monthHandler(e: React.ChangeEvent<HTMLInputElement>): void {
         const month = e?.target?.value;
         dispatch({ type: CalculatorActionKind.LOANTENURE, payload: +month });
+    }
+
+    function monthIncrementHandler() {
+        dispatch({ type: CalculatorActionKind.LOANTENUREINCREASE, payload: 1 });
+    }
+    function monthDecrementHandler() {
+        dispatch({ type: CalculatorActionKind.LOANTENUREDECREASE, payload: 1 });
     }
 
     function enquireHandler() {}
@@ -82,10 +167,12 @@ const LoanCalculator = () => {
                 <div className='w-full md:w-1/2'>
                     <div className='flex items-center justify-between px-9'>
                         <p className='text-lightFont'>Loan Amount</p>
-                        <h3 className='text-2xl md:text-3xl lg:text-[38px]'>${state.loanAmount}</h3>
+                        <h3 className='text-2xl md:text-3xl lg:text-[38px]'>
+                            ${state.loanAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        </h3>
                     </div>
                     <div className='flex items-center space-x-[6px]'>
-                        <CalculatorButton icon={MinusIcon} onClick={() => {}} />
+                        <CalculatorButton icon={MinusIcon} onClick={loanDecreaseHandler} />
                         <input
                             type='range'
                             className='flex-1'
@@ -97,7 +184,7 @@ const LoanCalculator = () => {
                                 amountHandler(e);
                             }}
                         />
-                        <CalculatorButton icon={PlusIcon} onClick={() => {}} />
+                        <CalculatorButton icon={PlusIcon} onClick={loanIncreaseHandler} />
                     </div>
                     <div className='flex items-center justify-between text-lightFont px-9'>
                         <p>$500</p>
@@ -108,11 +195,11 @@ const LoanCalculator = () => {
                     <div className='flex items-center justify-between px-9'>
                         <p className='text-lightFont'>Loan Tenure</p>
                         <h3 className='text-2xl md:text-3xl lg:text-[38px]'>
-                            {state.month} months
+                            {state.month} {state.month > 1 ? 'months' : 'month'}
                         </h3>
                     </div>
                     <div className='flex items-center space-x-[6px]'>
-                        <CalculatorButton icon={MinusIcon} onClick={() => {}} />
+                        <CalculatorButton icon={MinusIcon} onClick={monthDecrementHandler} />
                         <input
                             type='range'
                             className='flex-1'
@@ -123,7 +210,7 @@ const LoanCalculator = () => {
                                 monthHandler(e);
                             }}
                         />
-                        <CalculatorButton icon={PlusIcon} onClick={() => {}} />
+                        <CalculatorButton icon={PlusIcon} onClick={monthIncrementHandler} />
                     </div>
                     <div className='flex items-center justify-between text-lightFont px-9'>
                         <p>1 month</p>
@@ -137,7 +224,10 @@ const LoanCalculator = () => {
                 <div className='flex-1 text-center pb-5 border-b border-stroke md:text-left md:border-none md:pb-0'>
                     <h6 className='text-lightFont'>Monthly Installment</h6>
                     <p className='text-5xl font-bold leading-[1.1] mt-[2px] md:text-7xl md:mt-5 lg:text-[90px] lg:mt-[2px]'>
-                        {state.monthlyInstallment.toFixed(2)}
+                        {state.monthlyInstallment
+                            .toFixed(2)
+                            .toString()
+                            .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     </p>
                     <p className='hidden text-sm text-lightFont leading-normal mt-5 md:block'>
                         *All the numbers are calculated based on a one percent interest rate.
@@ -146,11 +236,23 @@ const LoanCalculator = () => {
                 <div className='text-center md:w-[230px] md:text-left md:border-l md:border-stroke'>
                     <div className='border-b border-stroke md:pl-10 py-5 md:pt-0'>
                         <h6 className='text-lightFont mb-[2px]'>Total Interest</h6>
-                        <h4>$16,685.60 : {state.totalInterest.toFixed(2)}</h4>
+                        <h4>
+                            $
+                            {state.totalInterest
+                                .toFixed(2)
+                                .toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        </h4>
                     </div>
                     <div className='md:pl-10 pt-5'>
                         <h6 className='text-lightFont mb-[2px]'>Total Repayment</h6>
-                        <h4>${state.totalPayment.toFixed(2)}</h4>
+                        <h4>
+                            $
+                            {state.totalPayment
+                                .toFixed(2)
+                                .toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        </h4>
                     </div>
                 </div>
                 <p className='text-sm text-lightFont leading-normal mt-8 md:hidden'>
